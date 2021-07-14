@@ -20,7 +20,7 @@ used = []
 mistakes = []
 
 #bot init
-bot = telebot.TeleBot('1409701821:AAFEGpBpbof-MqzqcN4bp-ywNUb25MkeHIQ')
+bot = telebot.TeleBot(token)
 #start
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
