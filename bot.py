@@ -27,7 +27,7 @@ def send_welcome(message):
     bot.send_message(message.chat.id, "Привет, поиграем в города?")
     bot.send_message(message.chat.id, "Чтобы узнать правила  - отправь /help \nЧтобы окончить игру - отправь /end \nБот ходит первым - Москва. Введи название любого российского города на букву 'а'")
     used.clear()
-    used.append('Москва')
+    used.append('москва')
 @bot.message_handler(commands=['help'])
 def help(message):
     bot.send_message(message.from_user.id,'Бот и игрок называют российские города по очереди. \nКаждое следующее название города должно начинаться на ту букву, на которую заканчивается предыдущее название. \nУ вас всего три права на ошибку, затем игра будет окончена. \nЕсли в словаре бота закончатся города - победа за вами!')
@@ -43,11 +43,12 @@ def get_text_messages(message):
     curr_city = message.text.lower()
     if used:
     #check if first letter meets criteria
-        if curr_city[0] != used[-1][-1]:
+        char = used[-1][-1] if (used[-1][-1] not in bad_chars) else used[-1][-2]
+        if curr_city[0] != char:
             #check if number of mistakes exceeds 3
+            mistakes.append('curr_city')
             if len(mistakes) < 3:
-                mistakes.append('curr_city')
-                bot.send_message(message.chat.id, f'Неверно. Введите город на букву {used[-1][-1]}: ')
+                bot.send_message(message.chat.id, f'Неверно. Введите город на букву {char}: ')
             else:
                 bot.send_message(message.from_user.id, "Неверно. Игра окончена :( Чтобы начать заново - отправь /start")
                 used.clear()
@@ -55,17 +56,18 @@ def get_text_messages(message):
         elif curr_city in used or curr_city not in city_names:
             bot.send_message(message.from_user.id,'Этот город уже участвовал в игре или такого города еще нет в моем словаре')
         else:
-            char = curr_city[-1] if curr_city[-1] not in bad_chars else curr_city[-2]
-            next_cities = [name for name in city_names if name.startswith(char) and name not in used]
+            next_char = curr_city[-1] if curr_city[-1] not in bad_chars else curr_city[-2]
+            next_cities = [name for name in city_names if name.startswith(next_char) and name not in used]
             if next_cities:
                 next_city = random.choice(next_cities)
+                used.append(curr_city)
+                used.append(next_city)
+                bot.send_message(message.from_user.id, next_city.capitalize())
+                char = used[-1][-1] if (used[-1][-1] not in bad_chars) else used[-1][-2]
+                bot.send_message(message.from_user.id, f'Введите город на букву {char}:')
             else:
-                bot.send_message(message.from_user.id, "Победа! :)")
+                bot.send_message(message.from_user.id, "Победа! :) Чтобы начать заново - отправь /start")
                 used.clear()
-            used.append(curr_city)
-            used.append(next_city)
-            bot.send_message(message.from_user.id, next_city.capitalize())
-            bot.send_message(message.from_user.id, f'Введите город на букву {used[-1][-1]}: ')
     else:
         bot.send_message(message.from_user.id, 'Чтобы начать игру - отправь /start, чтобы узнать правила - отправь /help')
 
